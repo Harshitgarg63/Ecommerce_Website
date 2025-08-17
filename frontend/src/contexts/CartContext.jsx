@@ -5,24 +5,33 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity = 1) => {
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id);
+      const existingItem = prevItems.find((item) => item._id === product._id);
       if (existingItem) {
         return prevItems.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+          item._id === product._id
+            ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      return [...prevItems, { ...product, quantity: 1 }];
+      return [...prevItems, { ...product, quantity: quantity }];
     });
   };
 
   const removeFromCart = (productId) => {
     setCartItems((prevItems) =>
-      prevItems.filter((item) => item.id !== productId)
+      prevItems.filter((item) => item._id !== productId)
     );
+  };
+
+  const updateCartItemQuantity = (productId, newQuantity) => {
+    setCartItems((prevItems) => {
+      const quantity = Math.max(1, newQuantity);
+      return prevItems.map((item) =>
+        item._id === productId ? { ...item, quantity } : item
+      );
+    });
   };
 
   const checkout = () => {
@@ -32,7 +41,13 @@ export const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, checkout }}
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        checkout,
+        updateCartItemQuantity,
+      }}
     >
       {children}
     </CartContext.Provider>

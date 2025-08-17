@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { createProduct } from "../api/productApi.js";
+import { toast } from "react-toastify";
 
-const CreateProductForm = ({ currentUser, navigate }) => {
+const CreateProductForm = ({ currentUser }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -11,33 +13,40 @@ const CreateProductForm = ({ currentUser, navigate }) => {
     image: "",
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    if (
+      !formData.name ||
+      !formData.description ||
+      !formData.price ||
+      !formData.category ||
+      !formData.stock
+    ) {
+      setError("Please fill in all required fields.");
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      toast.error(error);
+      return;
+    }
     setLoading(true);
-    setSuccess(false);
     setError(null);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/products",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-          withCredentials: true,
-        }
-      );
-
-      setSuccess(true);
+      await createProduct(formData, currentUser.token);
+      toast.success("Product created successfully!");
       setFormData({
         name: "",
         description: "",
@@ -46,13 +55,12 @@ const CreateProductForm = ({ currentUser, navigate }) => {
         stock: "",
         image: "",
       });
-      console.log("Product created successfully:", response.data.data);
-      setTimeout(() => navigate("list"), 1500);
+      navigate("/admin/list");
     } catch (err) {
-      setError(
-        err.response?.data?.error || err.message || "Failed to create product"
-      );
-      console.error("Error creating product:", err);
+      const errorMessage =
+        err.response?.data?.error || err.message || "Failed to create product";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -60,10 +68,9 @@ const CreateProductForm = ({ currentUser, navigate }) => {
 
   return (
     <div className="mt-8">
-      <h3 className="text-2xl font-bold text-gray-800 mb-4">
-        Create New Product
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <h3 className="text-2xl font-bold mb-4">Create New Product</h3>
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
+        {/* Name */}
         <div>
           <label
             htmlFor="name"
@@ -81,6 +88,7 @@ const CreateProductForm = ({ currentUser, navigate }) => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
+        {/* Description */}
         <div>
           <label
             htmlFor="description"
@@ -98,6 +106,7 @@ const CreateProductForm = ({ currentUser, navigate }) => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           ></textarea>
         </div>
+        {/* Price and Category */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label
@@ -134,6 +143,7 @@ const CreateProductForm = ({ currentUser, navigate }) => {
             />
           </div>
         </div>
+        {/* Stock and Image */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label
@@ -183,23 +193,18 @@ const CreateProductForm = ({ currentUser, navigate }) => {
           </button>
           <button
             type="button"
-            onClick={() => navigate("list")}
+            onClick={() => navigate("/admin/list")}
             className="flex-grow px-4 py-2 text-gray-700 font-semibold rounded-md shadow-md bg-gray-200 hover:bg-gray-300 transition-colors duration-200"
           >
             Cancel
           </button>
         </div>
+        {error && (
+          <div className="mt-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+            Error: {error}
+          </div>
+        )}
       </form>
-      {success && (
-        <div className="mt-4 p-4 text-sm text-green-700 bg-green-100 rounded-lg">
-          Product created successfully!
-        </div>
-      )}
-      {error && (
-        <div className="mt-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-          Error: {error}
-        </div>
-      )}
     </div>
   );
 };

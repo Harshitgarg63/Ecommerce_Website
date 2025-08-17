@@ -5,7 +5,8 @@ import { useCart } from "../contexts/CartContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, checkout } = useCart();
+  const { cartItems, removeFromCart, checkout, updateCartItemQuantity } =
+    useCart();
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
@@ -38,7 +39,7 @@ const CartPage = () => {
         <div className="space-y-4">
           {cartItems.map((item) => (
             <motion.div
-              key={item.id}
+              key={item._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -59,12 +60,28 @@ const CartPage = () => {
                 <p className="text-indigo-600 font-bold">
                   ${item.price.toFixed(2)}
                 </p>
-                <p className="text-gray-500 text-sm">
-                  Quantity: {item.quantity}
-                </p>
+                <div className="flex items-center space-x-2 mt-2">
+                  <button
+                    onClick={() =>
+                      updateCartItemQuantity(item._id, item.quantity - 1)
+                    }
+                    className="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300 text-sm font-semibold"
+                  >
+                    -
+                  </button>
+                  <span className="text-base font-bold">{item.quantity}</span>
+                  <button
+                    onClick={() =>
+                      updateCartItemQuantity(item._id, item.quantity + 1)
+                    }
+                    className="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300 text-sm font-semibold"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <button
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => removeFromCart(item._id)}
                 className="p-2 text-red-500 hover:text-red-700 transition-colors duration-200 rounded-full bg-red-50 hover:bg-red-100"
               >
                 <Trash2 size={20} />

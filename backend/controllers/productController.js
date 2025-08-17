@@ -1,11 +1,36 @@
+// controllers/productController.js
 const Product = require("../models/Product");
 
-// @desc    Get all products
+// @desc    Get all products with filtering, searching, and sorting
 // @route   GET /api/v1/products
 // @access  Public
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find();
+    const { search, sort } = req.query;
+    let query = {};
+
+    // Search functionality
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+
+    let sortOption = {};
+    // Sorting functionality
+    if (sort) {
+      if (sort === "price-asc") {
+        sortOption.price = 1; // 1 for ascending
+      } else if (sort === "price-desc") {
+        sortOption.price = -1; // -1 for descending
+      }
+    }
+
+    const products = await Product.find(query).sort(sortOption);
+
     res
       .status(200)
       .json({ success: true, count: products.length, data: products });

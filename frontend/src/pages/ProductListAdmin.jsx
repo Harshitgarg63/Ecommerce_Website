@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { fetchProducts, deleteProduct } from "../api/productApi.js";
 import { useNavigate } from "react-router-dom";
 
-const ProductListAdmin = ({ navigate, currentUser }) => {
+const ProductListAdmin = ({ currentUser }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const routerNavigate = useNavigate();
+  const navigate = useNavigate();
 
   const getProducts = async () => {
     try {
@@ -28,8 +27,7 @@ const ProductListAdmin = ({ navigate, currentUser }) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await deleteProduct(productId, currentUser.token);
-        // Remove the product from the local state
-        setProducts(products.filter((p) => p._id !== productId));
+        setProducts((prev) => prev.filter((p) => p._id !== productId));
       } catch (err) {
         alert(err.response?.data?.error || "Failed to delete product");
       }
@@ -52,7 +50,16 @@ const ProductListAdmin = ({ navigate, currentUser }) => {
 
   return (
     <div className="mt-8 overflow-x-auto">
-      <h3 className="text-2xl font-bold text-gray-800 mb-4">All Products</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-2xl font-bold text-gray-800">All Products</h3>
+        <button
+          onClick={() => navigate("/admin/create")}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        >
+          Create Product
+        </button>
+      </div>
+
       {products.length === 0 ? (
         <p className="text-center text-gray-500">
           No products found. Create a new one to get started.
@@ -61,28 +68,16 @@ const ProductListAdmin = ({ navigate, currentUser }) => {
         <table className="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden shadow-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Name
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Price
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Stock
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -101,7 +96,11 @@ const ProductListAdmin = ({ navigate, currentUser }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    onClick={() => navigate("update", product)}
+                    onClick={() =>
+                      navigate(`/admin/update/${product._id}`, {
+                        state: { product },
+                      })
+                    }
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
                   >
                     Edit

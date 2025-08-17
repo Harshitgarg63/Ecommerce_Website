@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { updateProduct } from "../api/productApi.js";
+import { useNavigate, useParams } from "react-router-dom";
+import { updateProduct, fetchProductById } from "../api/productApi.js";
+import { toast } from "react-toastify";
 
-const ProductUpdateForm = ({ product, navigate, currentUser }) => {
+const ProductUpdateForm = ({ currentUser }) => {
+  const [product, setProduct] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -13,22 +15,32 @@ const ProductUpdateForm = ({ product, navigate, currentUser }) => {
     image: "",
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
-  const routerNavigate = useNavigate();
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || "",
-        description: product.description || "",
-        price: product.price || "",
-        category: product.category || "",
-        stock: product.stock || "",
-        image: product.image || "",
-      });
-    }
-  }, [product]);
+    const getProduct = async () => {
+      setLoading(true);
+      try {
+        const fetchedProduct = await fetchProductById(id);
+        setProduct(fetchedProduct);
+        setFormData({
+          name: fetchedProduct.name || "",
+          description: fetchedProduct.description || "",
+          price: fetchedProduct.price || "",
+          category: fetchedProduct.category || "",
+          stock: fetchedProduct.stock || "",
+          image: fetchedProduct.image || "",
+        });
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getProduct();
+  }, [id]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,24 +49,45 @@ const ProductUpdateForm = ({ product, navigate, currentUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess(false);
     setError(null);
 
     try {
       await updateProduct(product._id, formData, currentUser.token);
-
-      setSuccess(true);
-      console.log("Product updated successfully");
-      setTimeout(() => navigate("list"), 1500);
+      toast.success("Product updated successfully!");
+      setTimeout(() => navigate("/admin"), 1500);
     } catch (err) {
-      setError(
-        err.response?.data?.error || err.message || "Failed to update product"
-      );
-      console.error("Error updating product:", err);
+      const errorMessage =
+        err.response?.data?.error || err.message || "Failed to update product";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="text-center text-xl text-gray-500">
+        Loading product data...
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-3xl font-bold text-red-500">
+          Error: {error || "Product not found"}
+        </h2>
+        <button
+          onClick={() => navigate("/admin")}
+          className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-md"
+        >
+          Back to Admin
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8">
@@ -167,7 +200,7 @@ const ProductUpdateForm = ({ product, navigate, currentUser }) => {
             />
           </div>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 mt-6">
           <button
             type="submit"
             disabled={loading}
@@ -181,23 +214,18 @@ const ProductUpdateForm = ({ product, navigate, currentUser }) => {
           </button>
           <button
             type="button"
-            onClick={() => navigate("list")}
+            onClick={() => navigate("/admin")}
             className="flex-grow px-4 py-2 text-gray-700 font-semibold rounded-md shadow-md bg-gray-200 hover:bg-gray-300 transition-colors duration-200"
           >
             Cancel
           </button>
         </div>
-        {success && (
-          <div className="mt-4 p-4 text-sm text-green-700 bg-green-100 rounded-lg">
-            Product updated successfully!
-          </div>
-        )}
-        {error && (
-          <div className="mt-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-            Error: {error}
-          </div>
-        )}
       </form>
+      {error && (
+        <div className="mt-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+          Error: {error}
+        </div>
+      )}
     </div>
   );
 };

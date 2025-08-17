@@ -1,10 +1,7 @@
-// controllers/reviewController.js
 const Review = require("../models/Review");
 
-// @desc    Get reviews for a single product
-// @route   GET /api/v1/products/:productId/reviews
-// @access  Public
-exports.getProductReviews = async (req, res, next) => {
+// GET reviews for a product
+exports.getProductReviews = async (req, res) => {
   try {
     const reviews = await Review.find({
       product: req.params.productId,
@@ -17,39 +14,34 @@ exports.getProductReviews = async (req, res, next) => {
   }
 };
 
-// @desc    Create a new review for a product
-// @route   POST /api/v1/products/:productId/reviews
-// @access  Private
-exports.createProductReview = async (req, res, next) => {
+// CREATE a new review
+exports.createProductReview = async (req, res) => {
   try {
     const { title, text, rating } = req.body;
+
+    // productId comes from route param
     const product = req.params.productId;
-    const user = req.user.id;
-    const review = await Review.create({
-      title,
-      text,
-      rating,
-      product,
-      user,
-    });
+
+    // user comes from protect middleware
+    const user = req.user._id;
+
+    const review = await Review.create({ title, text, rating, product, user });
     res.status(201).json({ success: true, data: review });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
 };
 
-// @desc    Update a review
-// @route   PUT /api/v1/reviews/:id
-// @access  Private
-exports.updateReview = async (req, res, next) => {
+// UPDATE a review
+exports.updateReview = async (req, res) => {
   try {
-    let review = await Review.findById(req.params.id);
-    if (!review) {
+    const review = await Review.findById(req.params.id);
+    if (!review)
       return res
         .status(404)
         .json({ success: false, error: "Review not found" });
-    }
-    if (review.user.toString() !== req.user.id) {
+
+    if (review.user.toString() !== req.user._id.toString()) {
       return res
         .status(401)
         .json({
@@ -57,28 +49,32 @@ exports.updateReview = async (req, res, next) => {
           error: "Not authorized to update this review",
         });
     }
-    review = await Review.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    res.status(200).json({ success: true, data: review });
+
+    const updatedReview = await Review.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({ success: true, data: updatedReview });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
 };
 
-// @desc    Delete a review
-// @route   DELETE /api/v1/reviews/:id
-// @access  Private
-exports.deleteReview = async (req, res, next) => {
+// DELETE a review
+exports.deleteReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
-    if (!review) {
+    if (!review)
       return res
         .status(404)
         .json({ success: false, error: "Review not found" });
-    }
-    if (review.user.toString() !== req.user.id) {
+
+    if (review.user.toString() !== req.user._id.toString()) {
       return res
         .status(401)
         .json({
@@ -86,6 +82,7 @@ exports.deleteReview = async (req, res, next) => {
           error: "Not authorized to delete this review",
         });
     }
+
     await review.deleteOne();
     res.status(200).json({ success: true, data: {} });
   } catch (err) {

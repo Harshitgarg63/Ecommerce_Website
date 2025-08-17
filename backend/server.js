@@ -22,7 +22,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cookieParser()); // Use cookie-parser middleware
+app.use(cookieParser());
 
 // Temporary route to generate a token for testing
 app.get("/api/v1/generate-token", (req, res) => {
@@ -45,10 +45,17 @@ const reviewRoutes = require("./routes/reviews");
 
 // Mount routes
 app.use("/api/v1/auth", authRoutes);
+
+// Mount review routes nested under products
+app.use("/api/v1/products/:productId/reviews", reviewRoutes);
+
+// Mount review routes separately for update/delete
+app.use("/api/v1/reviews", reviewRoutes);
+
+// Mount the rest of the top-level routes
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/reviews", reviewRoutes);
 
 const PORT = process.env.PORT || 5000;
 

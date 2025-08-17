@@ -1,52 +1,8 @@
-import React, { useState } from "react";
-import ProductListAdmin from "./ProductListAdmin.jsx";
-import CreateProductForm from "../components/CreateProductForm.jsx";
-import ProductUpdateForm from "../components/ProductUpdateForm.jsx";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 
-const AdminDashboard = ({ currentUser }) => {
-  const [adminView, setAdminView] = useState("list");
-  const [productToEdit, setProductToEdit] = useState(null);
+const AdminDashboard = ({ currentUser, onLogout }) => {
   const navigate = useNavigate();
-
-  const navigateAdmin = (view, product = null) => {
-    setAdminView(view);
-    setProductToEdit(product);
-  };
-
-  const renderAdminView = () => {
-    switch (adminView) {
-      case "list":
-        return (
-          <ProductListAdmin
-            navigate={navigateAdmin}
-            currentUser={currentUser}
-          />
-        );
-      case "create":
-        return (
-          <CreateProductForm
-            navigate={navigateAdmin}
-            currentUser={currentUser}
-          />
-        );
-      case "update":
-        return (
-          <ProductUpdateForm
-            product={productToEdit}
-            navigate={navigateAdmin}
-            currentUser={currentUser}
-          />
-        );
-      default:
-        return (
-          <ProductListAdmin
-            navigate={navigateAdmin}
-            currentUser={currentUser}
-          />
-        );
-    }
-  };
 
   if (!currentUser || currentUser.role !== "admin") {
     return (
@@ -66,13 +22,42 @@ const AdminDashboard = ({ currentUser }) => {
           Admin Dashboard
         </h2>
         <button
-          onClick={() => navigateAdmin("create")}
-          className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition-colors duration-200"
+          onClick={() => {
+            onLogout();
+            navigate("/");
+          }}
+          className="px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition-colors duration-200"
         >
-          Create New Product
+          Logout
         </button>
       </div>
-      {renderAdminView()}
+
+      <nav className="flex space-x-4 mb-8">
+        <NavLink
+          to="list"
+          className={({ isActive }) =>
+            isActive
+              ? "px-4 py-2 bg-indigo-600 text-white rounded-md"
+              : "px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+          }
+        >
+          Product List
+        </NavLink>
+
+        <NavLink
+          to="create"
+          className={({ isActive }) =>
+            isActive
+              ? "px-4 py-2 bg-indigo-600 text-white rounded-md"
+              : "px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+          }
+        >
+          Create Product
+        </NavLink>
+      </nav>
+
+      {/* Render nested routes here */}
+      <Outlet />
     </div>
   );
 };
