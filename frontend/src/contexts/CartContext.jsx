@@ -34,8 +34,8 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  const checkout = () => {
-    alert("Simulating checkout...");
+  // ✅ real clearCart function
+  const clearCart = () => {
     setCartItems([]);
   };
 
@@ -45,8 +45,8 @@ export const CartProvider = ({ children }) => {
         cartItems,
         addToCart,
         removeFromCart,
-        checkout,
         updateCartItemQuantity,
+        clearCart, // ✅ provide it here
       }}
     >
       {children}

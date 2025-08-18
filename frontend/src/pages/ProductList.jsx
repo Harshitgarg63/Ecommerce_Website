@@ -10,6 +10,7 @@ const ProductList = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const navigate = useNavigate();
 
   const getProducts = async () => {
@@ -27,6 +28,13 @@ const ProductList = () => {
     getProducts();
   }, [searchQuery, sortOrder]);
 
+  // Get unique categories
+  const categories = [...new Set(products.map((p) => p.category))];
+
+  // Filter products by selected category
+  const filteredProducts = categoryFilter
+    ? products.filter((p) => p.category === categoryFilter)
+    : products;
   if (loading) {
     return (
       <div className="text-center text-lg text-gray-500 animate-pulse py-10">
@@ -73,12 +81,28 @@ const ProductList = () => {
             <option value="price-desc">💲 Price (High → Low)</option>
           </select>
         </div>
+
+        {/* Category Filter */}
+        <div className="w-full sm:w-auto">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Product Grid */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.length > 0 ? (
-          products.map((product) => (
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))
         ) : (

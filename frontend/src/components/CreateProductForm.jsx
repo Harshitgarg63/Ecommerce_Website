@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { createProduct } from "../api/productApi.js";
 import { toast } from "react-toastify";
 
+// Predefined categories
+const categories = ["Electronics", "Clothing", "Books", "Furniture", "Other"];
+
 const CreateProductForm = ({ currentUser }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
-    category: "",
-    stock: "",
+    stock: "", // ✅ added stock
+    category: categories[0],
     image: "",
   });
   const [loading, setLoading] = useState(false);
@@ -25,8 +28,8 @@ const CreateProductForm = ({ currentUser }) => {
       !formData.name ||
       !formData.description ||
       !formData.price ||
-      !formData.category ||
-      !formData.stock
+      !formData.stock || // ✅ validate stock
+      !formData.category
     ) {
       setError("Please fill in all required fields.");
       return false;
@@ -51,8 +54,8 @@ const CreateProductForm = ({ currentUser }) => {
         name: "",
         description: "",
         price: "",
-        category: "",
-        stock: "",
+        stock: "", // ✅ reset stock after submit
+        category: categories[0],
         image: "",
       });
       navigate("/admin/list");
@@ -88,6 +91,7 @@ const CreateProductForm = ({ currentUser }) => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
+
         {/* Description */}
         <div>
           <label
@@ -106,8 +110,9 @@ const CreateProductForm = ({ currentUser }) => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           ></textarea>
         </div>
-        {/* Price and Category */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* Price, Stock, Category */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label
               htmlFor="price"
@@ -125,26 +130,7 @@ const CreateProductForm = ({ currentUser }) => {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Category
-            </label>
-            <input
-              type="text"
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
-        {/* Stock and Image */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
           <div>
             <label
               htmlFor="stock"
@@ -159,26 +145,53 @@ const CreateProductForm = ({ currentUser }) => {
               value={formData.stock}
               onChange={handleChange}
               required
+              min="0"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
+
           <div>
             <label
-              htmlFor="image"
+              htmlFor="category"
               className="block text-sm font-medium text-gray-700"
             >
-              Image URL
+              Category
             </label>
-            <input
-              type="text"
-              id="image"
-              name="image"
-              value={formData.image}
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
+
+        {/* Image */}
+        <div>
+          <label
+            htmlFor="image"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Image URL
+          </label>
+          <input
+            type="text"
+            id="image"
+            name="image"
+            value={formData.image}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+
+        {/* Buttons */}
         <div className="flex space-x-4">
           <button
             type="submit"
@@ -199,6 +212,7 @@ const CreateProductForm = ({ currentUser }) => {
             Cancel
           </button>
         </div>
+
         {error && (
           <div className="mt-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
             Error: {error}

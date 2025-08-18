@@ -5,8 +5,7 @@ import { useCart } from "../contexts/CartContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, checkout, updateCartItemQuantity } =
-    useCart();
+  const { cartItems, removeFromCart, updateCartItemQuantity } = useCart();
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
@@ -110,7 +109,7 @@ const CartPage = () => {
             <span>${subtotal.toFixed(2)}</span>
           </div>
           <button
-            onClick={checkout}
+            onClick={() => navigate("/checkout")} // ✅ Navigate instead of calling checkout
             className="w-full mt-6 px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition-colors duration-300"
           >
             Proceed to Checkout

@@ -15,6 +15,7 @@ import axios from "axios";
 import CreateProductForm from "./components/CreateProductForm.jsx";
 import ProductListAdmin from "./pages/ProductListAdmin.jsx";
 import ProductUpdateForm from "./components/ProductUpdateForm.jsx";
+import CheckoutPage from "./pages/CheckoutPage.jsx";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -78,6 +79,16 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/Home" element={<HomePage />} />
           <Route path="/products" element={<ProductList />} />
+          <Route
+            path="/checkout"
+            element={
+              isLoggedIn ? (
+                <CheckoutPage />
+              ) : (
+                <LoginPage onLogin={handleLogin} />
+              )
+            }
+          />
           <Route
             path="/products/:id"
             element={

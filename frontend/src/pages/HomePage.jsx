@@ -37,7 +37,7 @@ const HomePage = () => {
           />
         </AnimatePresence>
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div className="absolute inset-0 bg-opacity-30"></div>
         {/* Slider Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
           {images.map((_, i) => (

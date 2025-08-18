@@ -4,21 +4,25 @@ import { useCart } from "../contexts/CartContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const Header = ({ currentUser, isLoggedIn, onLogout }) => {
-  const { cartItems } = useCart();
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const { cartItems = [] } = useCart() || {}; // ✅ use cart instead of cartItems
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // In a real app, you would hit a logout endpoint to clear the cookie
     onLogout();
   };
+
+  // Prevent reduce crash by ensuring fallback []
+  const cartCount = (cartItems || []).reduce(
+    (acc, item) => acc + (item.quantity || 0),
+    0
+  );
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <h1
           className="text-2xl font-bold text-indigo-600 cursor-pointer"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/Home")}
         >
           E-com
         </h1>
@@ -50,9 +54,9 @@ const Header = ({ currentUser, isLoggedIn, onLogout }) => {
                 className="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors duration-200 rounded-full bg-gray-100 hover:bg-gray-200"
               >
                 <ShoppingCart size={20} />
-                {totalItems > 0 && (
+                {cartCount > 0 && (
                   <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                    {totalItems}
+                    {cartCount}
                   </span>
                 )}
               </button>
